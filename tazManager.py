@@ -5,7 +5,7 @@ import pydash
 class tazManager():
     _instance = None
     _base = r'./csv/'
-    _csv_fn = 'taz_info.csv'
+    _csv_fn = 'candidate_CTPS_TAZ_STATEWIDE_2019.csv'
     _fq_csv_fn = _base + _csv_fn
     _taz_table = []
     
@@ -17,11 +17,12 @@ class tazManager():
                 new = {}
                 new['id'] = int(row['id'])
                 new['taz'] = int(row['taz'])
-                new['type'] = int(row['type'])
+                new['type'] = row['type']
                 new['town'] = row['town']
                 new['state'] = row['state']
                 new['town_state'] = row['town_state']
-                new['in_mpo'] = int(row['in_mpo'])
+                new['mpo'] = row['mpo']
+                new['in_brmpo'] = int(row['in_brmpo'])
                 new['subregion'] = row['subregion']
                 self._taz_table.append(new)
             # end_for
@@ -33,16 +34,20 @@ class tazManager():
     # For debugging during development:
     def _get_tt_item(self, index):
         return self._taz_table[index]
-
-    def mpo_tazes(self):
-        retval = retval = pydash.collections.filter_(self._taz_table, lambda x: x['in_mpo'] == 1)
+        
+    def mpo_to_tazes(self, mpo):
+        retval = pydash.collections.filter_(self._taz_table, lambda x: x['mpo'] == mpo)
         return retval
 
-    def mpo_town_to_tazes(self, mpo_town):
-        retval = pydash.collections.filter_(self._taz_table, lambda x: x['in_mpo'] == 1 and x['town'] == mpo_town)
+    def brmpo_tazes(self):
+        retval = pydash.collections.filter_(self._taz_table, lambda x: x['in_brmpo'] == 1)
         return retval
 
-    def mpo_subregion_to_tazes(self, mpo_subregion):
+    def brmpo_town_to_tazes(self, mpo_town):
+        retval = pydash.collections.filter_(self._taz_table, lambda x: x['in_brmpo'] == 1 and x['town'] == mpo_town)
+        return retval
+
+    def brmpo_subregion_to_tazes(self, mpo_subregion):
         # We have to be careful as some towns are in two subregions,
         # and for these the 'subregion' field of the table contains
         # an entry of the form 'SUBREGION_1/SUBREGION_2'.
